@@ -1,3 +1,4 @@
+import csv
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -22,7 +23,7 @@ url = "https://docs.google.com/forms/d/e/1FAIpQLSdUCd3UWQ3VOgeg0ZzNeT-xzNawU8AJ7
 # Open the URL
 driver.get(url)
 
-def fill_form(fullname, contact, email, address, pincode, dob, gender, code):
+def fill_form(fullname, contact, email, address, pincode, dob, gender, code, index):
     # Wait for the form elements to be present
     time.sleep(2)  # wait for the form to load
 
@@ -44,15 +45,28 @@ def fill_form(fullname, contact, email, address, pincode, dob, gender, code):
     address_input.clear()
     # Enter the data into the textarea field
     address_input.send_keys(address)
-
+    
+    # Take a screenshot before submitting the form
+    driver.save_screenshot(f'form_filled_{index}_before.png')
+    
     # Optionally, you may want to submit the form
     submit_button = driver.find_element(By.CLASS_NAME, "NPEfkd")
     submit_button.click()
-    #Take a screenshot before submitting the form
-    driver.save_screenshot('form_filled.png')
+    
+    # Take a screenshot after submitting the form
+    driver.save_screenshot(f'form_filled_{index}_after.png')
+    
+    # Click on the link to submit another response
+    another_response = driver.find_element(By.XPATH, "/html/body/div[1]/div[2]/div[1]/div/div[4]/a")
+    another_response.click()
 
-# Fill the form with the provided data
-fill_form("virat gupta", "3456789987", "virat@gmail.com", 'house A', '12345', "12/12/2012", "Male", "GNFPYC")
+# Read the CSV file and fill the form for each entry
+with open("form_entries.csv", mode='r') as file:
+    reader = csv.reader(file, delimiter=',')
+    for index, row in enumerate(reader):
+        fill_form(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], index)
+
+print("Success")
 
 # Add a delay to keep the browser open
 time.sleep(10)
